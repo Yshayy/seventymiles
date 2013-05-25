@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="https://static.opentok.com/webrtc/v2.0/js/TB.min.js"></script>
+
+</head>
+<body>
+    <div id="myPublisherDiv"></div>
+        <script type="text/javascript">
+    var apiKey = "1127";
+var sessionId = "1_MX4xMTI3fn5GcmkgTWF5IDI0IDA4OjU1OjE4IFBEVCAyMDEzfjAuMjQ4ODA5OTN-";
+var token = "T1==cGFydG5lcl9pZD0xMTI3JnNpZz0zZjhkMzk1NmZhZDkwYzRmOTY3NzRmYWQ0OWM3MDZkNzcyZmM4NTRjOnNlc3Npb25faWQ9MV9NWDR4TVRJM2ZuNUdjbWtnVFdGNUlESTBJREE0T2pVMU9qRTRJRkJFVkNBeU1ERXpmakF1TWpRNE9EQTVPVE4tJmNyZWF0ZV90aW1lPTEzNjk0MTA5MTgmbm9uY2U9NTI4MDI4JnJvbGU9cHVibGlzaGVy";
+
+// Enable console logs for debugging
+TB.setLogLevel(TB.DEBUG);
+
+// Initialize session, set up event listeners, and connect
+var session = TB.initSession(sessionId);
+session.addEventListener('sessionConnected', sessionConnectedHandler);
+session.addEventListener('streamCreated', streamCreatedHandler);
+session.connect(apiKey, token);
+function sessionConnectedHandler(event) {
+  var publisher = TB.initPublisher(apiKey, 'myPublisherDiv');
+  session.publish(publisher);
+
+  // Subscribe to streams that were in the session when we connected
+  subscribeToStreams(event.streams);
+}
+
+function streamCreatedHandler(event) {
+  // Subscribe to any new streams that are created
+  subscribeToStreams(event.streams);
+}
+
+function subscribeToStreams(streams) {
+  for (var i = 0; i < streams.length; i++) {
+    // Make sure we don't subscribe to ourself
+    if (streams[i].connection.connectionId == session.connection.connectionId) {
+      return;
+    }
+
+    // Create the div to put the subscriber element in to
+    var div = document.createElement('div');
+    div.setAttribute('id', 'stream' + streams[i].streamId);
+    document.body.appendChild(div);
+
+    // Subscribe to the stream
+    session.subscribe(streams[i], div.id);
+  }
+}
+</script>
+</body>
+
+</html>
